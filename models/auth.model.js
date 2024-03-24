@@ -22,6 +22,11 @@ class AuthUser {
     db.query("SELECT id, username, password_hash FROM user WHERE username=?;", [
       username,
     ]);
+
+  updateLastLogin = (id) =>
+    db.query("UPDATE user SET last_login_at=CURRENT_TIMESTAMP () WHERE id=?;", [
+      id,
+    ]);
 }
 
 export default AuthUser;

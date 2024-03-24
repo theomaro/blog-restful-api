@@ -1,6 +1,6 @@
 import Joi from "joi";
 
-export const register = Joi.object({
+const register = Joi.object({
   email: Joi.string().email({ minDomainSegments: 2 }).required(),
   username: Joi.string().min(3).max(30).required(),
   password: Joi.string()
@@ -17,3 +17,10 @@ export const register = Joi.object({
     .required(),
   confirmed_password: Joi.ref("password"),
 }).with("password", "confirmed_password");
+
+const login = Joi.object({
+  username: Joi.string().min(3).max(30).required(),
+  password: Joi.string().required(),
+});
+
+export { register, login };

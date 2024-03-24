@@ -1,7 +1,8 @@
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 import AuthUser from "../models/auth.model.js";
-import { register } from "../helpers/validator.helper.js";
+import { register, login } from "../helpers/validator.helper.js";
 
 const auth = AuthUser.getInstance();
 
@@ -74,7 +75,66 @@ const signUp = async (req, res, next) => {
 };
 
 const signIn = async (req, res, next) => {
-  res.status(200).json("sign in");
+  // load form data
+  const input_username = req.body.username;
+  const input_password = req.body.password;
+
+  try {
+    // validate form data
+    await login.validateAsync({
+      username: input_username,
+      password: input_password,
+    });
+
+    // check if username already existed
+    let [results, _] = await auth.isUsernameExist(input_username);
+    if (results.length === 0)
+      return res.status(409).json({
+        success: false,
+        message: "username does not exists",
+        data: { username: input_username },
+      });
+
+    // get user login credential if exists by username
+    let user = await auth.getUserBy(input_username);
+    const { id, password_hash } = user[0][0];
+
+    // compare the password with the one stored in database
+    let isHashMatch = await bcrypt.compare(input_password, password_hash);
+
+    if (!isHashMatch)
+      return res.status(409).json({
+        success: false,
+        message: "Incorrect password",
+        data: { username: input_username, password: input_password },
+      });
+
+    // generate web token
+    const token = jwt.sign({ id }, process.env.JWT_SECRET_KEY, {
+      expiresIn: process.env.JWT_EXPIRES,
+    });
+
+    // set the cookie options
+
+    // update last login
+    await auth.updateLastLogin(id);
+
+    // login in the user
+    res.status(200).json({
+      success: true,
+      message: "user has been logged in",
+      token,
+      expiresIn: process.env.COOKIE_EXPIRES, // nth days in seconds
+    });
+  } catch (err) {
+    let message = err.details[0].message;
+
+    return res.status(409).json({
+      success: false,
+      message,
+      data: { username: input_username, password: input_password },
+    });
+  }
 };
 
 export { signUp, signIn };
