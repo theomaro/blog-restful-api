@@ -1,7 +1,7 @@
 {
   "name": "express-mysql-api-starter",
   "version": "1.0.0",
-  "description": "A starter template for building a MVC backend RESTful API with Node.js, Express.js and MySQL",
+  "description": "A backend RESTful API for a blog admin panel build with Node.js, Express.JS and MySQL.",
   "main": "app.js",
   "type": "module",
   "scripts": {
