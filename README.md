@@ -1,3 +1,3 @@
-# Express MySQL API Starter Template
+# Blog Restful API built with Express and MySQL
 
-A starter template for building a MVC backend RESTful API with Node.js, Express.js and MySQL
+A backend RESTful API for a blog admin panel build with Node.js, Express.JS and MySQL.
