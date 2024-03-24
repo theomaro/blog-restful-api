@@ -1,5 +1,5 @@
 {
-  "name": "express-mysql-api-starter",
+  "name": "blog-restful-api",
   "version": "1.0.0",
   "description": "A backend RESTful API for a blog admin panel build with Node.js, Express.JS and MySQL.",
   "main": "app.js",
