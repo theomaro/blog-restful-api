@@ -25,7 +25,7 @@ class AuthUser {
 
   getUserById = (id) => {
     const sql =
-      "SELECT id, username, current_role, full_name, sex, birth_date, phone, email, biography, country, avatar_url, current_status, modified_at, last_login_at FROM user WHERE id=?;";
+      "SELECT id, username, current_role, full_name, sex, birth_date, phone, email, biography, location, avatar_url, current_status, modified_at, last_login_at FROM user WHERE id=?;";
     return db.query(sql, [id]);
   };
 

@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS user (
     email VARCHAR(100) NOT NULL UNIQUE,
     avatar_url VARCHAR(255) NULL DEFAULT NULL,
     biography TINYTEXT NULL DEFAULT NULL,
-    country VARCHAR(45) NULL DEFAULT NULL,
+    location VARCHAR(45) NULL DEFAULT NULL,
     current_status ENUM('active', 'deleted', 'banned') NOT NULL DEFAULT 'active',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP (),
     modified_at DATETIME NULL DEFAULT NULL,
