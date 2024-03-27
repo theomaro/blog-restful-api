@@ -23,4 +23,32 @@ const login = Joi.object({
   password: Joi.string().required(),
 });
 
-export { register, login };
+const passwords = Joi.object({
+  oldPassword: Joi.string()
+    .regex(new RegExp("(?=.*([A-Z]){1,})"), "uppercase")
+    .message("oldPassword Must have at least one uppercase")
+    .regex(new RegExp("(?=.*[a-z]{1,})"), "lowercase")
+    .message("oldPassword Must have at least one lowercase")
+    .regex(new RegExp("(?=.*[)(!@#$&*]{1,})"), "character")
+    .message("oldPassword Must have at least one character")
+    .regex(new RegExp("(?=.*[0-9]{1,})"), "number")
+    .message("oldPassword Must have at least one number")
+    .regex(new RegExp(".{8,30}"), "min")
+    .message("oldPassword Must be at least 8 character long")
+    .required(),
+  newPassword: Joi.string()
+    .regex(new RegExp("(?=.*([A-Z]){1,})"), "uppercase")
+    .message("Must have at least one uppercase")
+    .regex(new RegExp("(?=.*[a-z]{1,})"), "lowercase")
+    .message("Must have at least one lowercase")
+    .regex(new RegExp("(?=.*[)(!@#$&*]{1,})"), "character")
+    .message("Must have at least one character")
+    .regex(new RegExp("(?=.*[0-9]{1,})"), "number")
+    .message("Must have at least one number")
+    .regex(new RegExp(".{8,30}"), "min")
+    .message("Must be at least 8 character long")
+    .required(),
+  confirmedNewPassword: Joi.ref("newPassword"),
+});
+
+export { register, login, passwords };

@@ -24,6 +24,12 @@ class User {
   updateUsername = (id, username) =>
     db.query("UPDATE user SET username=? WHERE id=?;", [username, id]);
 
+  updatePassword = (id, password_hash) =>
+    db.query("UPDATE user SET password_hash=? WHERE id=?;", [
+      password_hash,
+      id,
+    ]);
+
   deleteUserById = (id) => db.query("DELETE FROM user WHERE id=?;", [id]);
 }
 
