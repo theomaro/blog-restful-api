@@ -41,8 +41,6 @@ const deleteUser = async (req, res, next) => {
   const token = req.body.token;
   const { username, password } = req.body.user;
 
-  //
-
   if (!token) {
     return res.status(409).json({
       success: false,
@@ -96,4 +94,62 @@ const deleteUser = async (req, res, next) => {
   });
 };
 
-export { getUser, deleteUser };
+const changeUsername = async (req, res, next) => {
+  const { token, username } = req.body;
+
+  // verify token
+  let isVerified = jwt.verify(token, process.env.JWT_SECRET_KEY);
+  if (!isVerified)
+    return res.status(409).json({
+      success: false,
+      message: "user not verified",
+    });
+
+  // get old username
+  let { id } = jwt.decode(token);
+  let [results, _] = await user.getCredentials(id);
+
+  if (results.length === 0)
+    return res.status(409).json({
+      success: false,
+      message: "user does not exist",
+    });
+
+  // compare username
+  if (username === results[0].username)
+    return res.status(409).json({
+      success: false,
+      message: "Username must be different.",
+    });
+
+  // check if username is available
+  [results, _] = await user.getUsers();
+
+  if (results.length === 0)
+    return res.status(409).json({
+      success: false,
+      message: "something goes wrong",
+    });
+
+  let users = results.map((result) => result.username);
+
+  if (users.includes(username))
+    return res.json({
+      success: false,
+      message: `${username} already taken`,
+    });
+
+  // update username
+  [results] = await user.updateUsername(id, username);
+  if (results.affectedRows !== 1)
+    return res.status(409).json({
+      success: false,
+      message: "failed to change the username",
+    });
+
+  res
+    .status(200)
+    .json({ success: true, message: `Username changed successfully` });
+};
+
+export { getUser, deleteUser, changeUsername };
