@@ -5,7 +5,8 @@
   "main": "app.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon app"
+    "start": "set NODE_ENV=production&& nodemon app",
+    "dev": "set NODE_ENV=development&& nodemon app"
   },
   "keywords": [
     "restful api",
@@ -20,6 +21,7 @@
     "express": "^4.18.3",
     "joi": "^17.12.2",
     "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
     "mysql2": "^3.9.2"
   },
   "devDependencies": {
