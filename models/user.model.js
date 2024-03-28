@@ -22,10 +22,10 @@ class User {
     db.query("SELECT username, password_hash FROM user WHERE id=?;", [id]);
 
   updateUsername = (id, username) =>
-    db.query("UPDATE user SET username=? WHERE id=?;", [username, id]);
+    db.query("UPDATE user SET username=?, modified_at=CURRENT_TIMESTAMP () WHERE id=?;", [username, id]);
 
   updatePassword = (id, password_hash) =>
-    db.query("UPDATE user SET password_hash=? WHERE id=?;", [
+    db.query("UPDATE user SET password_hash=?, modified_at=CURRENT_TIMESTAMP () WHERE id=?;", [
       password_hash,
       id,
     ]);
