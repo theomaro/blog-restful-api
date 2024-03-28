@@ -51,4 +51,19 @@ const passwords = Joi.object({
   confirmedNewPassword: Joi.ref("newPassword"),
 });
 
-export { register, login, passwords };
+const profile = Joi.object({
+  full_name: Joi.string().allow(""),
+  sex: Joi.string().allow(""),
+  birth_date: Joi.string().isoDate().allow(""),
+  phone: Joi.string().allow(""),
+  email: Joi.string().email({ minDomainSegments: 2 }),
+  avatar_url: Joi.string().allow(""),
+  biography: Joi.string().allow(""),
+  location: Joi.string().allow(""),
+});
+
+const uname = Joi.object({
+  username: Joi.string().min(3).max(30).required(),
+});
+
+export { register, login, passwords, profile, uname };

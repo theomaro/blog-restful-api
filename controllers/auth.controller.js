@@ -12,42 +12,62 @@ const signUp = async (req, res, next) => {
 
   try {
     // validate form data
-    await register.validateAsync({
+    let { error, value } = register.validate({
       email,
       username,
       password,
       confirmed_password,
     });
 
+    if (error) {
+      let message = err ? err.details[0].message : "";
+
+      return res.status(409).json({
+        success: false,
+        message: message.includes("[ref:")
+          ? "Password does not match"
+          : message,
+        data: {
+          email,
+          username,
+        },
+      });
+    }
+
     // check if email already existed
-    let [results, _] = await auth.isEmailExist(email);
+    let [results, _] = await auth.isEmailExist(value.email);
     if (results.length !== 0)
       return res.status(409).json({
         success: false,
         message: "email already exists",
-        data: { email, username, password, confirmed_password },
+        data: {
+          email: value.email,
+          username: value.username,
+        },
       });
 
     // check if username already existed
-    [results, _] = await auth.isUsernameExist(username);
+    [results, _] = await auth.isUsernameExist(value.username);
     if (results.length !== 0)
       return res.status(409).json({
         success: false,
         message: "username has already been taken",
         data: {
-          email,
-          username,
-          password,
-          confirmed_password,
+          email: value.email,
+          username: value.username,
         },
       });
 
     // hash the password
     const salt_hash = await bcrypt.genSalt();
-    const password_hash = await bcrypt.hash(password, salt_hash);
+    const password_hash = await bcrypt.hash(value.password, salt_hash);
 
     // create a new user
-    [results] = await auth.registerUser(email, username, password_hash);
+    [results] = await auth.registerUser(
+      value.email,
+      value.username,
+      password_hash
+    );
     if (results.affectedRows !== 1) {
       return res
         .status(500)
@@ -59,54 +79,54 @@ const signUp = async (req, res, next) => {
       message: "user registered successfully",
     });
   } catch (err) {
-    let message = err ? err.details[0].message : "";
-
     return res.status(409).json({
       success: false,
-      message: message.includes("[ref:") ? "Password does not match" : message,
-      data: {
-        email,
-        username,
-        password,
-        confirmed_password,
-      },
+      message: "Something goes wrong",
     });
   }
 };
 
 const signIn = async (req, res, next) => {
   // load form data
-  const input_username = req.body.username;
-  const input_password = req.body.password;
+  let { username, password } = req.body;
 
   try {
     // validate form data
-    await login.validateAsync({
-      username: input_username,
-      password: input_password,
+    let { error, value } = login.validate({
+      username,
+      password,
     });
 
+    if (error)
+      return res.status(409).json({
+        success: false,
+        message: error.details[0].message,
+        data: {
+          username,
+        },
+      });
+
     // check if username already existed
-    let [results, _] = await auth.isUsernameExist(input_username);
+    let [results, _] = await auth.isUsernameExist(value.username);
     if (results.length === 0)
       return res.status(409).json({
         success: false,
         message: "username does not exists",
-        data: { username: input_username },
+        data: { username: value.username },
       });
 
     // get user login credential if exists by username
-    let user = await auth.getUserBy(input_username);
+    let user = await auth.getUserBy(value.username);
     const { id, password_hash } = user[0][0];
 
     // compare the password with the one stored in database
-    let isHashMatch = await bcrypt.compare(input_password, password_hash);
+    let isHashMatch = await bcrypt.compare(value.password, password_hash);
 
     if (!isHashMatch)
       return res.status(409).json({
         success: false,
         message: "Incorrect password",
-        data: { username: input_username, password: input_password },
+        data: { username: value.username },
       });
 
     // generate web token
@@ -127,12 +147,9 @@ const signIn = async (req, res, next) => {
       expiresIn: process.env.COOKIE_EXPIRES, // nth days in seconds
     });
   } catch (err) {
-    let message = err.details[0].message;
-
     return res.status(409).json({
       success: false,
-      message,
-      data: { username: input_username, password: input_password },
+      message: "Something goes wrong",
     });
   }
 };
