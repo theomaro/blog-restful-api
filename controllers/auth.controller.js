@@ -144,7 +144,7 @@ const signIn = async (req, res, next) => {
       success: true,
       message: "user has been logged in",
       token,
-      expiresIn: process.env.COOKIE_EXPIRES, // nth days in seconds
+      expiresIn: process.env.COOKIE_EXPIRES * 24 * 60 * 60, // nth days in seconds
     });
   } catch (err) {
     return res.status(409).json({

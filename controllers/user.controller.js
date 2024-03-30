@@ -1,5 +1,4 @@
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
 import {
   login,
@@ -11,28 +10,7 @@ import {
 const user = User.getInstance();
 
 const getUser = async (req, res, next) => {
-  const token = req.body.token;
-
-  if (!token) {
-    return res.status(409).json({
-      success: false,
-      message: "jwt must be provided",
-    });
-  }
-
-  let { err, id } = jwt.verify(
-    token,
-    process.env.JWT_SECRET_KEY,
-    (error, decoded) => {
-      return { err: error, id: decoded?.id };
-    }
-  );
-
-  if (err)
-    return res.status(409).json({
-      success: false,
-      message: "user not verified",
-    });
+  const id = req.body.id;
 
   //
   const [results, _] = await user.getUserById(id);
@@ -51,7 +29,7 @@ const getUser = async (req, res, next) => {
 };
 
 const deleteUser = async (req, res, next) => {
-  const token = req.body.token;
+  const id = req.body.id;
   const { username, password } = req.body.user;
 
   try {
@@ -62,26 +40,7 @@ const deleteUser = async (req, res, next) => {
         message: error.details[0].message,
       });
 
-    if (!token) {
-      return res.status(409).json({
-        success: false,
-        message: "jwt must be provided",
-      });
-    }
-
-    let { err, id } = jwt.verify(
-      token,
-      process.env.JWT_SECRET_KEY,
-      (error, decoded) => {
-        return { err: error, id: decoded?.id };
-      }
-    );
-
-    if (err)
-      return res.status(409).json({
-        success: false,
-        message: "user not verified",
-      });
+    // TODO: token authZ middleware
 
     //
     let [results, _] = await user.getCredentials(id);
@@ -132,7 +91,8 @@ const deleteUser = async (req, res, next) => {
 };
 
 const changeUsername = async (req, res, next) => {
-  const { token, username } = req.body;
+  const id = req.body.id;
+  const { username } = req.body;
 
   try {
     const { error, value } = uname.validate({ username });
@@ -145,27 +105,7 @@ const changeUsername = async (req, res, next) => {
         },
       });
 
-    if (!token) {
-      return res.status(409).json({
-        success: false,
-        message: "jwt must be provided",
-      });
-    }
-
-    // verify token
-    let { err, id } = jwt.verify(
-      token,
-      process.env.JWT_SECRET_KEY,
-      (error, decoded) => {
-        return { err: error, id: decoded?.id };
-      }
-    );
-
-    if (err)
-      return res.status(409).json({
-        success: false,
-        message: "user not verified",
-      });
+    // TODO: token authZ middleware
 
     // get old username
     let [results, _] = await user.getCredentials(id);
@@ -220,7 +160,8 @@ const changeUsername = async (req, res, next) => {
 };
 
 const changePassword = async (req, res, next) => {
-  const { token, oldPassword, newPassword, confirmedNewPassword } = req.body;
+  const id = req.body.id;
+  const { oldPassword, newPassword, confirmedNewPassword } = req.body;
 
   try {
     const { error, value } = passwords.validate({
@@ -235,13 +176,6 @@ const changePassword = async (req, res, next) => {
         message: error.details[0].message,
       });
 
-    if (!token) {
-      return res.status(409).json({
-        success: false,
-        message: "jwt must be provided",
-      });
-    }
-
     if (!value.oldPassword === value.newPassword)
       return res.status(409).json({
         success: false,
@@ -254,19 +188,7 @@ const changePassword = async (req, res, next) => {
         message: "New password must match",
       });
 
-    let { err, id } = jwt.verify(
-      token,
-      process.env.JWT_SECRET_KEY,
-      (error, decoded) => {
-        return { err: error, id: decoded?.id };
-      }
-    );
-
-    if (err)
-      return res.status(409).json({
-        success: false,
-        message: "user not verified",
-      });
+    // TODO: token authZ middleware
 
     // get user login credential if exists by username
     let [results, _] = await user.getCredentials(id);
@@ -312,7 +234,7 @@ const changePassword = async (req, res, next) => {
 };
 
 const updateProfile = async (req, res, next) => {
-  const token = req.body.token;
+  const id = req.body.id;
   const {
     full_name,
     sex,
@@ -343,26 +265,7 @@ const updateProfile = async (req, res, next) => {
         message: error.details[0].message,
       });
 
-    if (!token) {
-      return res.status(409).json({
-        success: false,
-        message: "jwt must be provided",
-      });
-    }
-
-    let { err, id } = jwt.verify(
-      token,
-      process.env.JWT_SECRET_KEY,
-      (error, decoded) => {
-        return { err: error, id: decoded?.id };
-      }
-    );
-
-    if (err)
-      return res.status(409).json({
-        success: false,
-        message: "user not verified",
-      });
+    // TODO: token authZ middleware
 
     const newUser = {
       full_name: value.full_name || null,
