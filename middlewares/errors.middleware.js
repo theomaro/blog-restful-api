@@ -1,7 +1,17 @@
 const errorHandler = (error, req, res, next) => {
   let message = error.message;
-  return res.status(409).json({
-    success: false,
+  let success = false;
+
+  if (error instanceof AppError) {
+    return res.status(error.statusCode).json({
+      success,
+      errorCode: error.errorCode,
+      message,
+    });
+  }
+
+  return res.status(500).json({
+    success,
     message,
   });
 };
@@ -18,5 +28,13 @@ const validationErrorHandler = (error, req, res, next) => {
     });
   } else next(error);
 };
+
+export default class AppError extends Error {
+  constructor(errorCode, message, statusCode) {
+    super(message);
+    this.statusCode = statusCode;
+    this.errorCode = errorCode;
+  }
+}
 
 export { errorHandler, validationErrorHandler };

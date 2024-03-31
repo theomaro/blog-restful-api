@@ -6,6 +6,7 @@ import {
   profile,
   uname,
 } from "../helpers/validator.helper.js";
+import AppError from "../middlewares/errors.middleware.js";
 
 const user = User.getInstance();
 
@@ -13,7 +14,8 @@ const getUser = async (req, res) => {
   const id = req.body.id;
 
   const [results, _] = await user.getUserById(id);
-  if (results.length === 0) throw new Error("User not found");
+  if (results.length === 0)
+    throw new AppError("UserNotFound", "User does not exist", 404);
 
   return res.status(200).json({
     success: true,
@@ -31,20 +33,24 @@ const deleteUser = async (req, res, next) => {
   if (error) throw error;
 
   let [results, _] = await user.getCredentials(id);
-  if (results.length === 0) throw new Error("user does not exist");
+  if (results.length === 0)
+    throw new AppError("UserNotFound", "User does not exist", 404);
 
   // compare username
-  if (value.username !== results[0].username) throw new Error();
+  if (value.username !== results[0].username)
+    throw new AppError("WrongCredentials", "Username does not match", 400);
 
   // compare the password with the one stored in database
   let isHashMatch = await bcrypt.compare(
     value.password,
     results[0].password_hash
   );
-  if (!isHashMatch) throw new Error("Incorrect password");
+  if (!isHashMatch)
+    throw new AppError("WrongCredentials", "Incorrect password", 400);
 
   [results] = await user.deleteUserById(id);
-  if (results.affectedRows !== 1) throw new Error("no user to deleted");
+  if (results.affectedRows !== 1)
+    throw new AppError("OperationFailed", "no user to deleted", 400);
 
   return res.status(200).json({
     success: true,
@@ -62,15 +68,17 @@ const changeUsername = async (req, res, next) => {
 
   // get old username
   let [results, _] = await user.getCredentials(id);
-  if (results.length === 0) throw new Error("user does not exist");
+  if (results.length === 0)
+    throw new AppError("UserNotFound", "User does not exist", 404);
 
   // compare username
   if (value.username === results[0].username)
-    throw new Error("Username must be different.");
+    throw new AppError("WrongCredentials", "Username must be different.", 400);
 
   // check if username is available
   [results, _] = await user.getUsers();
-  if (results.length === 0) throw new Error("something goes wrong");
+  if (results.length === 0)
+    throw new AppError("OperationFailed", "no user to retrieved", 400);
 
   let users = results.map((result) => result.username);
   if (users.includes(value.username))
@@ -79,7 +87,8 @@ const changeUsername = async (req, res, next) => {
   // update username
   [results] = await user.updateUsername(id, value.username);
   if (results.affectedRows !== 1)
-    throw new Error("failed to change the username");
+    // throw new Error("");
+    throw new AppError("OperationFailed", "failed to change the username", 400);
 
   return res
     .status(200)
@@ -110,7 +119,8 @@ const changePassword = async (req, res, next) => {
 
   // validate password old password
   let isHashMatch = await bcrypt.compare(value.oldPassword, oldPasswordHash);
-  if (!isHashMatch) throw new Error("Incorrect old password");
+  if (!isHashMatch)
+    throw new Error("WrongCredentials", "Incorrect old password", 400);
 
   // check if old new password is not the same as old password
   isHashMatch = await bcrypt.compare(value.newPassword, oldPasswordHash);
@@ -122,7 +132,8 @@ const changePassword = async (req, res, next) => {
 
   // update password
   [results, _] = await user.updatePassword(id, password_hash);
-  if (results.affectedRows === 0) throw new Error("Something bad happened");
+  if (results.affectedRows === 0)
+    throw new AppError("OperationFailed", "Failed to update password", 400);
 
   return res
     .status(200)
@@ -170,7 +181,8 @@ const updateProfile = async (req, res, next) => {
 
   // update user profile
   let [results, _] = await user.updateUser({ id, ...newUser });
-  if (results.affectedRows === 0) throw new Error("something goes wrong");
+  if (results.affectedRows === 0)
+    throw new AppError("OperationFailed", "Failed to update profile", 400);
 
   return res.status(200).json({
     success: true,

@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 
 import AuthUser from "../models/auth.model.js";
 import { register, login } from "../helpers/validator.helper.js";
+import AppError from "../middlewares/errors.middleware.js";
 
 const auth = AuthUser.getInstance();
 
@@ -37,7 +38,8 @@ const signUp = async (req, res, next) => {
     value.username,
     password_hash
   );
-  if (results.affectedRows !== 1) throw new Error("Something bad happened");
+  if (results.affectedRows !== 1)
+    throw new AppError("OperationFailed", "Failed to register a user", 400);
 
   res.status(201).json({
     success: true,
@@ -56,9 +58,10 @@ const signIn = async (req, res, next) => {
   });
   if (error) throw error;
 
-  // check if username already existed
+  // check if username already existed Jos2018(Mat
   let [results, _] = await auth.isUsernameExist(value.username);
-  if (results.length === 0) throw new Error("username does not exists");
+  if (results.length === 0)
+    throw new AppError("WrongCredentials", "Incorrect username", 400);
 
   // get user login credential if exists by username
   let user = await auth.getUserBy(value.username);
@@ -66,7 +69,8 @@ const signIn = async (req, res, next) => {
 
   // compare the password with the one stored in database
   let isHashMatch = await bcrypt.compare(value.password, password_hash);
-  if (!isHashMatch) throw new Error("Incorrect password");
+  if (!isHashMatch)
+    throw new AppError("WrongCredentials", "Incorrect password", 400);
 
   // generate web token
   const token = jwt.sign({ id }, process.env.JWT_SECRET_KEY, {
