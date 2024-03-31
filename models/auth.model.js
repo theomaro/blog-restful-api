@@ -18,7 +18,7 @@ class AuthUser {
     db.query("SELECT username FROM user WHERE username=?;", username);
 
   getUserBy = (username) =>
-    db.query("SELECT id, username, password_hash FROM user WHERE username=?;", [
+    db.query("SELECT id, username, password_hash, current_role FROM user WHERE username=?;", [
       username,
     ]);
 

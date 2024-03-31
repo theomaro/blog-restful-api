@@ -4,7 +4,7 @@ import { createWriteStream } from "fs";
 import express from "express";
 import authRouter from "./routers/auth.router.js";
 import userRouter from "./routers/user.router.js";
-import { userAuthN } from "./middlewares/auth.middleware.js";
+import { userAuthN, userAuthZ } from "./middlewares/auth.middleware.js";
 import {
   errorHandler,
   validationErrorHandler,
@@ -31,7 +31,7 @@ app.use(express.urlencoded({ extended: false }));
 
 // configure url routes
 app.use("/api/auth", authRouter);
-app.use("/api/users", [userAuthN], userRouter);
+app.use("/api/users", [userAuthN, userAuthZ("admin")], userRouter);
 
 // configure error handlers
 app.use(validationErrorHandler);

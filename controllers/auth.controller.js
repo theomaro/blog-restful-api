@@ -65,12 +65,15 @@ const signIn = async (req, res, next) => {
 
   // get user login credential if exists by username
   let user = await auth.getUserBy(value.username);
-  const { id, password_hash } = user[0][0];
+  const { id, password_hash, current_role } = user[0][0];
 
   // compare the password with the one stored in database
   let isHashMatch = await bcrypt.compare(value.password, password_hash);
   if (!isHashMatch)
     throw new AppError("WrongCredentials", "Incorrect password", 400);
+
+  if (current_role !== "admin")
+    throw new AppError("PermissionError", "You are not authorized", 400);
 
   // generate web token
   const token = jwt.sign({ id }, process.env.JWT_SECRET_KEY, {

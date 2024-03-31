@@ -1,4 +1,6 @@
 import jwt from "jsonwebtoken";
+import User from "../models/user.model.js";
+import AppError from "./errors.middleware.js";
 
 const userAuthN = (req, res, next) => {
   const token = req.body.token;
@@ -19,7 +21,7 @@ const userAuthN = (req, res, next) => {
   );
 
   if (err)
-    return res.status(409).json({
+    return res.status(403).json({
       success: false,
       message: "user not verified",
     });
@@ -29,4 +31,21 @@ const userAuthN = (req, res, next) => {
   next();
 };
 
-export { userAuthN };
+const userAuthZ = (role) => async (req, res, next) => {
+  const user = User.getInstance();
+
+  try {
+    const [results, _] = await user.getUserById(req.body.id);
+    if (results.length === 0)
+      throw new AppError("UserNotFound", "User does not exist", 404);
+
+    if (results[0].current_role !== role)
+      throw new AppError("PermissionError", "user not authorized", 401);
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
+export { userAuthN, userAuthZ };
