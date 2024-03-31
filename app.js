@@ -5,7 +5,10 @@ import express from "express";
 import authRouter from "./routers/auth.router.js";
 import userRouter from "./routers/user.router.js";
 import { userAuthN } from "./middlewares/auth.middleware.js";
-import errorHandler from "./middlewares/errors.middleware.js";
+import {
+  errorHandler,
+  validationErrorHandler,
+} from "./middlewares/errors.middleware.js";
 
 const port = process.env.SERVER_PORT || 3000;
 const hostname = process.env.SERVER_HOSTNAME || "localhost";
@@ -30,7 +33,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/api/auth", authRouter);
 app.use("/api/users", [userAuthN], userRouter);
 
-// configure error handler
+// configure error handlers
+app.use(validationErrorHandler);
 app.use(errorHandler);
 
 app.listen(port, hostname, () => {

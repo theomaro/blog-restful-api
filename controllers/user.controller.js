@@ -28,7 +28,7 @@ const deleteUser = async (req, res, next) => {
 
   // validate user input
   const { error, value } = login.validate({ username, password });
-  if (error) throw new Error(error.details[0].message);
+  if (error) throw error;
 
   let [results, _] = await user.getCredentials(id);
   if (results.length === 0) throw new Error("user does not exist");
@@ -58,7 +58,7 @@ const changeUsername = async (req, res, next) => {
 
   // validate user input
   const { error, value } = uname.validate({ username });
-  if (error) throw new Error(error.details[0].message);
+  if (error) throw error;
 
   // get old username
   let [results, _] = await user.getCredentials(id);
@@ -96,7 +96,7 @@ const changePassword = async (req, res, next) => {
     newPassword,
     confirmedNewPassword,
   });
-  if (error) throw new Error(error.details[0].message);
+  if (error) throw error;
 
   if (!value.oldPassword === value.newPassword)
     throw new Error("New password must be different");
@@ -143,7 +143,7 @@ const updateProfile = async (req, res, next) => {
   } = req.body.user;
 
   // validate user input
-  let { value, error } = profile.validate({
+  const { error, value } = profile.validate({
     full_name,
     sex,
     birth_date,
@@ -153,7 +153,7 @@ const updateProfile = async (req, res, next) => {
     biography,
     location,
   });
-  if (error) throw new Error(error.details[0].message);
+  if (error) throw error;
 
   const newUser = {
     full_name: value.full_name || null,

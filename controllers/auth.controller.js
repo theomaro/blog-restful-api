@@ -17,12 +17,7 @@ const signUp = async (req, res, next) => {
     password,
     confirmed_password,
   });
-  if (error) {
-    let message = error.details[0].message ?? "";
-    throw new Error(
-      message.includes("[ref:") ? "Password does not match" : message
-    );
-  }
+  if (error) throw error;
 
   // check if email already existed
   let [results, _] = await auth.isEmailExist(value.email);
@@ -59,7 +54,7 @@ const signIn = async (req, res, next) => {
     username,
     password,
   });
-  if (error) throw new Error(error.details[0].message);
+  if (error) throw error;
 
   // check if username already existed
   let [results, _] = await auth.isUsernameExist(value.username);
