@@ -5,7 +5,7 @@
   "main": "app.js",
   "type": "module",
   "scripts": {
-    "start": "set NODE_ENV=production&& nodemon app",
+    "start": "set NODE_ENV=production&& node app",
     "dev": "set NODE_ENV=development&& nodemon app"
   },
   "keywords": [

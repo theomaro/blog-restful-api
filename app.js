@@ -37,6 +37,10 @@ app.use("/api/users", [userAuthN], userRouter);
 app.use(validationErrorHandler);
 app.use(errorHandler);
 
+// Initialize server
 app.listen(port, hostname, () => {
   console.log(`Server is listening at ${hostname}:${port}`);
 });
+
+// Export the Express API
+export default app;
