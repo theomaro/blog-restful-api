@@ -9,19 +9,13 @@ import {
 
 const user = User.getInstance();
 
-const getUser = async (req, res, next) => {
+const getUser = async (req, res) => {
   const id = req.body.id;
 
-  //
   const [results, _] = await user.getUserById(id);
+  if (results.length === 0) throw new Error("User not found");
 
-  if (results.length === 0)
-    return res.status(409).json({
-      success: false,
-      message: "something goes wrong",
-    });
-
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     message: "user is authenticated",
     user: results[0],
@@ -32,205 +26,107 @@ const deleteUser = async (req, res, next) => {
   const id = req.body.id;
   const { username, password } = req.body.user;
 
-  try {
-    const { error, value } = login.validate({ username, password });
-    if (error)
-      return res.status(409).json({
-        success: false,
-        message: error.details[0].message,
-      });
+  // validate user input
+  const { error, value } = login.validate({ username, password });
+  if (error) throw new Error(error.details[0].message);
 
-    // TODO: token authZ middleware
+  let [results, _] = await user.getCredentials(id);
+  if (results.length === 0) throw new Error("user does not exist");
 
-    //
-    let [results, _] = await user.getCredentials(id);
+  // compare username
+  if (value.username !== results[0].username) throw new Error();
 
-    if (results.length === 0)
-      return res.status(409).json({
-        success: false,
-        message: "user does not exist",
-      });
+  // compare the password with the one stored in database
+  let isHashMatch = await bcrypt.compare(
+    value.password,
+    results[0].password_hash
+  );
+  if (!isHashMatch) throw new Error("Incorrect password");
 
-    // compare username
-    if (value.username !== results[0].username)
-      return res.status(409).json({
-        success: false,
-        message: "username does not exist",
-      });
+  [results] = await user.deleteUserById(id);
+  if (results.affectedRows !== 1) throw new Error("no user to deleted");
 
-    // compare the password with the one stored in database
-    let isHashMatch = await bcrypt.compare(
-      value.password,
-      results[0].password_hash
-    );
-
-    if (!isHashMatch)
-      return res.status(409).json({
-        success: false,
-        message: "Incorrect password",
-      });
-
-    [results] = await user.deleteUserById(id);
-
-    if (results.affectedRows !== 1)
-      return res.status(409).json({
-        success: false,
-        message: "no user to deleted",
-      });
-
-    res.status(200).json({
-      success: true,
-      message: "user is deleted successfully",
-    });
-  } catch (err) {
-    return res.status(409).json({
-      success: false,
-      message: "Something goes wrong",
-    });
-  }
+  return res.status(200).json({
+    success: true,
+    message: "user is deleted successfully",
+  });
 };
 
 const changeUsername = async (req, res, next) => {
   const id = req.body.id;
   const { username } = req.body;
 
-  try {
-    const { error, value } = uname.validate({ username });
-    if (error)
-      return res.status(409).json({
-        success: false,
-        message: error.details[0].message,
-        data: {
-          username,
-        },
-      });
+  // validate user input
+  const { error, value } = uname.validate({ username });
+  if (error) throw new Error(error.details[0].message);
 
-    // TODO: token authZ middleware
+  // get old username
+  let [results, _] = await user.getCredentials(id);
+  if (results.length === 0) throw new Error("user does not exist");
 
-    // get old username
-    let [results, _] = await user.getCredentials(id);
+  // compare username
+  if (value.username === results[0].username)
+    throw new Error("Username must be different.");
 
-    if (results.length === 0)
-      return res.status(409).json({
-        success: false,
-        message: "user does not exist",
-      });
+  // check if username is available
+  [results, _] = await user.getUsers();
+  if (results.length === 0) throw new Error("something goes wrong");
 
-    // compare username
-    if (value.username === results[0].username)
-      return res.status(409).json({
-        success: false,
-        message: "Username must be different.",
-      });
+  let users = results.map((result) => result.username);
+  if (users.includes(value.username))
+    throw new Error(`${value.username} already taken`);
 
-    // check if username is available
-    [results, _] = await user.getUsers();
+  // update username
+  [results] = await user.updateUsername(id, value.username);
+  if (results.affectedRows !== 1)
+    throw new Error("failed to change the username");
 
-    if (results.length === 0)
-      return res.status(409).json({
-        success: false,
-        message: "something goes wrong",
-      });
-
-    let users = results.map((result) => result.username);
-
-    if (users.includes(value.username))
-      return res.json({
-        success: false,
-        message: `${value.username} already taken`,
-      });
-
-    // update username
-    [results] = await user.updateUsername(id, value.username);
-    if (results.affectedRows !== 1)
-      return res.status(409).json({
-        success: false,
-        message: "failed to change the username",
-      });
-
-    res
-      .status(200)
-      .json({ success: true, message: `Username changed successfully` });
-  } catch (err) {
-    return res.status(409).json({
-      success: false,
-      message: "Something goes wrong",
-    });
-  }
+  return res
+    .status(200)
+    .json({ success: true, message: `Username changed successfully` });
 };
 
 const changePassword = async (req, res, next) => {
   const id = req.body.id;
   const { oldPassword, newPassword, confirmedNewPassword } = req.body;
 
-  try {
-    const { error, value } = passwords.validate({
-      oldPassword,
-      newPassword,
-      confirmedNewPassword,
-    });
+  // validate user input
+  const { error, value } = passwords.validate({
+    oldPassword,
+    newPassword,
+    confirmedNewPassword,
+  });
+  if (error) throw new Error(error.details[0].message);
 
-    if (error)
-      return res.status(409).json({
-        success: false,
-        message: error.details[0].message,
-      });
+  if (!value.oldPassword === value.newPassword)
+    throw new Error("New password must be different");
 
-    if (!value.oldPassword === value.newPassword)
-      return res.status(409).json({
-        success: false,
-        message: "New password must be different",
-      });
+  if (value.newPassword !== value.confirmedNewPassword)
+    throw new Error("New password must match");
 
-    if (value.newPassword !== value.confirmedNewPassword)
-      return res.status(409).json({
-        success: false,
-        message: "New password must match",
-      });
+  // get user login credential if exists by username
+  let [results, _] = await user.getCredentials(id);
+  const oldPasswordHash = results[0].password_hash;
 
-    // TODO: token authZ middleware
+  // validate password old password
+  let isHashMatch = await bcrypt.compare(value.oldPassword, oldPasswordHash);
+  if (!isHashMatch) throw new Error("Incorrect old password");
 
-    // get user login credential if exists by username
-    let [results, _] = await user.getCredentials(id);
-    const oldPasswordHash = results[0].password_hash;
+  // check if old new password is not the same as old password
+  isHashMatch = await bcrypt.compare(value.newPassword, oldPasswordHash);
+  if (isHashMatch) throw new Error("old password can be a new password");
 
-    // validate password old password
-    let isHashMatch = await bcrypt.compare(value.oldPassword, oldPasswordHash);
-    if (!isHashMatch)
-      return res.status(409).json({
-        success: false,
-        message: "Incorrect old password",
-      });
+  // hash new password
+  const salt_hash = await bcrypt.genSalt();
+  const password_hash = await bcrypt.hash(value.newPassword, salt_hash);
 
-    // check if old new password is not the same as old password
-    isHashMatch = await bcrypt.compare(value.newPassword, oldPasswordHash);
-    if (isHashMatch)
-      return res.status(409).json({
-        success: false,
-        message: "old password can be a new password",
-      });
+  // update password
+  [results, _] = await user.updatePassword(id, password_hash);
+  if (results.affectedRows === 0) throw new Error("Something bad happened");
 
-    // hash new password
-    const salt_hash = await bcrypt.genSalt();
-    const password_hash = await bcrypt.hash(value.newPassword, salt_hash);
-
-    // update password
-    [results, _] = await user.updatePassword(id, password_hash);
-    if (results.affectedRows === 0) {
-      return res
-        .status(500)
-        .json({ success: false, message: "Something bad happened" });
-    }
-
-    res
-      .status(200)
-      .json({ success: true, message: `password changed successfully` });
-  } catch (err) {
-    return res.status(409).json({
-      success: false,
-      message: "Something goes wrong",
-    });
-  }
+  return res
+    .status(200)
+    .json({ success: true, message: `password changed successfully` });
 };
 
 const updateProfile = async (req, res, next) => {
@@ -246,59 +142,40 @@ const updateProfile = async (req, res, next) => {
     location,
   } = req.body.user;
 
-  try {
-    // validate user input
-    let { value, error } = profile.validate({
-      full_name,
-      sex,
-      birth_date,
-      phone,
-      email,
-      avatar_url,
-      biography,
-      location,
-    });
+  // validate user input
+  let { value, error } = profile.validate({
+    full_name,
+    sex,
+    birth_date,
+    phone,
+    email,
+    avatar_url,
+    biography,
+    location,
+  });
+  if (error) throw new Error(error.details[0].message);
 
-    if (error)
-      return res.status(409).json({
-        success: false,
-        message: error.details[0].message,
-      });
+  const newUser = {
+    full_name: value.full_name || null,
+    sex: value.sex || null,
+    birth_date: value.birth_date
+      ? new Date(value.birth_date).toISOString().slice(0, 19).replace("T", " ")
+      : null,
+    phone: value.phone || null,
+    email: value.email,
+    avatar_url: value.avatar_url || null,
+    biography: value.biography || null,
+    location: value.location || null,
+  };
 
-    // TODO: token authZ middleware
+  // update user profile
+  let [results, _] = await user.updateUser({ id, ...newUser });
+  if (results.affectedRows === 0) throw new Error("something goes wrong");
 
-    const newUser = {
-      full_name: value.full_name || null,
-      sex: value.sex || null,
-      birth_date: value.birth_date
-        ? new Date(value.birth_date)
-            .toISOString()
-            .slice(0, 19)
-            .replace("T", " ")
-        : null,
-      phone: value.phone || null,
-      email: value.email,
-      avatar_url: value.avatar_url || null,
-      biography: value.biography || null,
-      location: value.location || null,
-    };
-
-    // update user profile
-    let [results, _] = await user.updateUser({ id, ...newUser });
-    if (results.affectedRows === 0) {
-      return res.status(409).json({
-        success: false,
-        message: "something goes wrong",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: `User profile updated successfully`,
-    });
-  } catch (err) {
-    //
-  }
+  return res.status(200).json({
+    success: true,
+    message: `User profile updated successfully`,
+  });
 };
 
 export { getUser, deleteUser, changeUsername, changePassword, updateProfile };
