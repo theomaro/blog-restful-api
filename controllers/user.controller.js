@@ -24,7 +24,22 @@ const getUser = async (req, res) => {
   });
 };
 
-const deleteUser = async (req, res, next) => {
+const getUsers = async (req, res) => {
+  const { limit, page } = req.body.filter;
+
+  const [users, _] = await user.getUsers(req.body.id, limit, page);
+  if (users.length === 0)
+    throw new AppError("UserNotFound", `${users.length} users found`, 404);
+
+  return res.status(200).json({
+    success: true,
+    message: `${users.length} users retrieved`,
+    totalCounts: users.length,
+    users,
+  });
+};
+
+const deleteUser = async (req, res) => {
   const id = req.body.id;
   const { username, password } = req.body.user;
 
@@ -58,7 +73,7 @@ const deleteUser = async (req, res, next) => {
   });
 };
 
-const changeUsername = async (req, res, next) => {
+const changeUsername = async (req, res) => {
   const id = req.body.id;
   const { username } = req.body;
 
@@ -95,7 +110,7 @@ const changeUsername = async (req, res, next) => {
     .json({ success: true, message: `Username changed successfully` });
 };
 
-const changePassword = async (req, res, next) => {
+const changePassword = async (req, res) => {
   const id = req.body.id;
   const { oldPassword, newPassword, confirmedNewPassword } = req.body;
 
@@ -140,7 +155,7 @@ const changePassword = async (req, res, next) => {
     .json({ success: true, message: `password changed successfully` });
 };
 
-const updateProfile = async (req, res, next) => {
+const updateProfile = async (req, res) => {
   const id = req.body.id;
   const {
     full_name,
@@ -190,4 +205,11 @@ const updateProfile = async (req, res, next) => {
   });
 };
 
-export { getUser, deleteUser, changeUsername, changePassword, updateProfile };
+export {
+  getUser,
+  getUsers,
+  deleteUser,
+  changeUsername,
+  changePassword,
+  updateProfile,
+};

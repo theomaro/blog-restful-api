@@ -7,9 +7,10 @@ class User {
     return user ? user : new User();
   };
 
-  getUsers = () =>
+  getUsers = (id = "", limit = "", page = "") =>
     db.query(
-      "SELECT username, current_role, full_name, sex, birth_date, phone, email, biography, location, avatar_url, current_status, modified_at, last_login_at FROM user;"
+      "SELECT id, username, current_role, full_name, sex, birth_date, phone, email, biography, location, avatar_url, current_status, modified_at, last_login_at FROM user WHERE id != ? LIMIT ? OFFSET ?;",
+      [id, limit, page]
     );
 
   getUserById = (id) =>
