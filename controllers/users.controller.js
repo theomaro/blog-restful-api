@@ -4,7 +4,8 @@ import User from "../models/users.model.js";
 const user = User.getInstance();
 
 export const getUsers = async (req, res) => {
-  const [users, _] = await user.getUsers();
+  const [users, _] = await user.getUsers(req.body.id);
+
   if (users.length === 0)
     throw new AppError("UserNotFound", `${users.length} users found`, 404);
 
@@ -13,5 +14,18 @@ export const getUsers = async (req, res) => {
     message: `${users.length} users retrieved`,
     totalCounts: users.length,
     users,
+  });
+};
+
+export const getUser = async (req, res) => {
+  const [userData, _] = await user.getUser(req.body.username);
+
+  if (!userData[0])
+    throw new AppError("UserNotFound", `no user have been found`, 404);
+
+  return res.status(200).json({
+    success: true,
+    message: `user data retrieved`,
+    user: userData[0],
   });
 };

@@ -33,11 +33,11 @@ app.use(express.urlencoded({ extended: false }));
 // configure url routes
 app.use("/api/auth", authRouter);
 app.use("/api/profile", [userAuthN, userAuthZ("admin")], profileRouter);
-app.use("/api/users", usersRouter);
+app.use("/api/users", userAuthN, [userAuthZ("admin")], usersRouter);
 
 // configure error handlers
-// app.use(validationErrorHandler);
-// app.use(errorHandler);
+app.use(validationErrorHandler);
+app.use(errorHandler);
 
 // Initialize server
 app.listen(port, hostname, () => {
