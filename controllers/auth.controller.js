@@ -2,7 +2,10 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 import AuthUser from "../models/auth.model.js";
-import { register, login } from "../helpers/validator.helper.js";
+import {
+  registerValidator,
+  loginValidator,
+} from "../helpers/validator.helper.js";
 import AppError from "../middlewares/errors.middleware.js";
 
 const auth = AuthUser.getInstance();
@@ -12,7 +15,7 @@ const signUp = async (req, res, next) => {
   const { email, username, password, confirmed_password } = await req.body;
 
   // validate form data
-  let { error, value } = register.validate({
+  let { error, value } = registerValidator.validate({
     email,
     username,
     password,
@@ -52,7 +55,7 @@ const signIn = async (req, res, next) => {
   let { username, password } = req.body;
 
   // validate form data
-  let { error, value } = login.validate({
+  let { error, value } = loginValidator.validate({
     username,
     password,
   });

@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import User from "../models/user.model.js";
+import Profile from "../models/profile.model.js";
 import AppError from "./errors.middleware.js";
 
 const userAuthN = (req, res, next) => {
@@ -32,10 +32,10 @@ const userAuthN = (req, res, next) => {
 };
 
 const userAuthZ = (role) => async (req, res, next) => {
-  const user = User.getInstance();
+  const profile = Profile.getInstance();
 
   try {
-    const [results, _] = await user.getUserById(req.body.id);
+    const [results, _] = await profile.getProfile(req.body.id);
     if (results.length === 0)
       throw new AppError("UserNotFound", "User does not exist", 404);
 

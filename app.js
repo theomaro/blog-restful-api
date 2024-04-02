@@ -1,14 +1,15 @@
 import "dotenv/config"; // load enviroment variables
 import morgan from "morgan";
-import { createWriteStream } from "fs";
 import express from "express";
+import { createWriteStream } from "fs";
 import authRouter from "./routers/auth.router.js";
-import userRouter from "./routers/user.router.js";
+import profileRouter from "./routers/profile.router.js";
 import { userAuthN, userAuthZ } from "./middlewares/auth.middleware.js";
 import {
   errorHandler,
   validationErrorHandler,
 } from "./middlewares/errors.middleware.js";
+import usersRouter from "./routers/users.router.js";
 
 const port = process.env.SERVER_PORT || 3000;
 const hostname = process.env.SERVER_HOSTNAME || "localhost";
@@ -31,11 +32,12 @@ app.use(express.urlencoded({ extended: false }));
 
 // configure url routes
 app.use("/api/auth", authRouter);
-app.use("/api/users", [userAuthN, userAuthZ("admin")], userRouter);
+app.use("/api/profile", [userAuthN, userAuthZ("admin")], profileRouter);
+app.use("/api/users", usersRouter);
 
 // configure error handlers
-app.use(validationErrorHandler);
-app.use(errorHandler);
+// app.use(validationErrorHandler);
+// app.use(errorHandler);
 
 // Initialize server
 app.listen(port, hostname, () => {

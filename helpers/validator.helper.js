@@ -1,6 +1,6 @@
 import Joi from "joi";
 
-const register = Joi.object({
+const registerValidator = Joi.object({
   email: Joi.string().email({ minDomainSegments: 2 }).required(),
   username: Joi.string().min(3).max(30).required(),
   password: Joi.string()
@@ -18,12 +18,12 @@ const register = Joi.object({
   confirmed_password: Joi.ref("password"),
 }).with("password", "confirmed_password");
 
-const login = Joi.object({
+const loginValidator = Joi.object({
   username: Joi.string().min(3).max(30).required(),
   password: Joi.string().required(),
 });
 
-const passwords = Joi.object({
+const passwordsValidator = Joi.object({
   oldPassword: Joi.string()
     .regex(new RegExp("(?=.*([A-Z]){1,})"), "uppercase")
     .message("oldPassword Must have at least one uppercase")
@@ -51,7 +51,7 @@ const passwords = Joi.object({
   confirmedNewPassword: Joi.ref("newPassword"),
 });
 
-const profile = Joi.object({
+const profileValidator = Joi.object({
   full_name: Joi.string().allow(""),
   sex: Joi.string().allow(""),
   birth_date: Joi.string().isoDate().allow(""),
@@ -62,8 +62,14 @@ const profile = Joi.object({
   location: Joi.string().allow(""),
 });
 
-const uname = Joi.object({
+const usernameValidator = Joi.object({
   username: Joi.string().min(3).max(30).required(),
 });
 
-export { register, login, passwords, profile, uname };
+export {
+  registerValidator,
+  loginValidator,
+  passwordsValidator,
+  profileValidator,
+  usernameValidator,
+};
