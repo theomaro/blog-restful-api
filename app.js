@@ -36,8 +36,8 @@ app.use("/api/profile", [userAuthN, userAuthZ("admin")], profileRouter);
 app.use("/api/users", userAuthN, [userAuthZ("admin")], usersRouter);
 
 // configure error handlers
-// app.use(validationErrorHandler);
-// app.use(errorHandler);
+app.use(validationErrorHandler);
+app.use(errorHandler);
 
 // Initialize server
 app.listen(port, hostname, () => {
