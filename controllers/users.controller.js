@@ -4,7 +4,10 @@ import User from "../models/users.model.js";
 const user = User.getInstance();
 
 export const getUsers = async (req, res) => {
-  const [users, _] = await user.getUsers(req.body.id);
+  const limit = parseInt(req.body.limit) ?? 10;
+  const offset = parseInt(req.body.page) - 1 ?? 0;
+
+  const [users, _] = await user.getUsers(req.body.id, limit, offset);
 
   if (users.length === 0)
     throw new AppError("UserNotFound", `${users.length} users found`, 404);
