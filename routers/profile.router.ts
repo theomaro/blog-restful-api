@@ -5,8 +5,8 @@ import {
   deleteProfile,
   getProfile,
   updateProfile,
-} from "../controllers/profile.controller.js";
-import tryCatch from "../helpers/tryCatch.helper.js";
+} from "../../controllers/profile.controller.js";
+import tryCatch from "../../helpers/tryCatch.helper.js";
 
 const profileRouter = new Router();
 
