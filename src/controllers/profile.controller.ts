@@ -7,6 +7,7 @@ import {
   usernameValidator,
 } from "../helpers/validator.helper.js";
 import { Request, RequestHandler, Response } from "express";
+import { ResultSetHeader } from "mysql2";
 
 const profile = Profile.getInstance();
 
@@ -64,7 +65,7 @@ export const updateProfile: RequestHandler = async (
   req: Request,
   res: Response
 ) => {
-  const { id, user } = req.body;
+  const { id, user, username } = req.body;
   const {
     full_name,
     sex,
@@ -103,7 +104,13 @@ export const updateProfile: RequestHandler = async (
   };
 
   // update user profile
-  let results = await profile.updateProfile({ id, ...newProfile });
+  let results: ResultSetHeader;
+  if (username) {
+    results = await profile.updateProfile({ username, ...newProfile });
+  } else {
+    results = await profile.updateProfile({ id, ...newProfile });
+  }
+
   if (results.affectedRows === 0) throw new Error("Failed to update profile");
 
   return res.status(200).json({
@@ -132,6 +139,7 @@ export const changeUsername: RequestHandler = async (
 
   // check if username is available
   let usernames = await profile.getUsernames();
+
   if (usernames.length === 0) throw new Error("no user to retrieved");
 
   let users = usernames.map((result: any) => result.username);

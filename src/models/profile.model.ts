@@ -30,21 +30,41 @@ class Profile {
   };
 
   public updateProfile = async (profile: UserProfile) => {
-    const sql =
-      "UPDATE user SET full_name=?, sex=?, birth_date=?, phone=?, email=?, avatar_url=?, biography=?, location=?, modified_at=CURRENT_TIMESTAMP () WHERE id=?;";
-    return await db
-      .query<ResultSetHeader>(sql, [
-        profile.full_name,
-        profile.sex,
-        profile.birth_date,
-        profile.phone,
-        profile.email,
-        profile.avatar_url,
-        profile.biography,
-        profile.location,
-        profile.id,
-      ])
-      .then(([rows, _]) => rows);
+    let sql: string;
+
+    if (profile.username) {
+      sql =
+        "UPDATE user SET full_name=?, sex=?, birth_date=?, phone=?, email=?, avatar_url=?, biography=?, location=?, modified_at=CURRENT_TIMESTAMP () WHERE username=?;";
+      return await db
+        .query<ResultSetHeader>(sql, [
+          profile.full_name,
+          profile.sex,
+          profile.birth_date,
+          profile.phone,
+          profile.email,
+          profile.avatar_url,
+          profile.biography,
+          profile.location,
+          profile.username,
+        ])
+        .then(([rows, _]) => rows);
+    } else {
+      sql =
+        "UPDATE user SET full_name=?, sex=?, birth_date=?, phone=?, email=?, avatar_url=?, biography=?, location=?, modified_at=CURRENT_TIMESTAMP () WHERE id=?;";
+      return await db
+        .query<ResultSetHeader>(sql, [
+          profile.full_name,
+          profile.sex,
+          profile.birth_date,
+          profile.phone,
+          profile.email,
+          profile.avatar_url,
+          profile.biography,
+          profile.location,
+          profile.id,
+        ])
+        .then(([rows, _]) => rows);
+    }
   };
   public updateUsername = async (id: string, username: string) => {
     const sql =
@@ -76,7 +96,7 @@ class Profile {
 
   public getUsernames = async () => {
     const sql = "SELECT username FROM user;";
-    return await db.query<RowDataPacket[]>(sql).then(([rows, _]) => rows[0]);
+    return await db.query<RowDataPacket[]>(sql).then(([rows, _]) => rows);
   };
 }
 
