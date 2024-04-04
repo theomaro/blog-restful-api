@@ -6,7 +6,6 @@ import {
   profileValidator,
   usernameValidator,
 } from "../helpers/validator.helper.js";
-import AppError from "../middlewares/errors.middleware.js";
 import { Request, RequestHandler, Response } from "express";
 
 const profile = Profile.getInstance();
@@ -18,8 +17,7 @@ export const getProfile: RequestHandler = async (
   const { id } = req.body;
 
   const userProfile = await profile.getProfile(id);
-  if (!userProfile)
-    throw new AppError("UserNotFound", "User does not exist", 404);
+  if (!userProfile) throw new Error("User does not exist");
 
   return res.status(200).json({
     success: true,
@@ -37,27 +35,24 @@ export const deleteProfile: RequestHandler = async (
 
   // validate user input
   const { error, value } = loginValidator.validate({ username, password });
-  if (error) throw error;
+  if (error) throw new Error(error.details[0].message);
 
   let credentials = await profile.getCredentials(id);
-  if (!credentials)
-    throw new AppError("UserNotFound", "User does not exist", 404);
+  if (!credentials) throw new Error("User does not exist");
 
   // compare username
   if (value.username !== credentials.username)
-    throw new AppError("WrongCredentials", "Username does not match", 400);
+    throw new Error("Username does not match");
 
   // compare the password with the one stored in database
   let isHashMatch = await bcrypt.compare(
     value.password,
     credentials.password_hash
   );
-  if (!isHashMatch)
-    throw new AppError("WrongCredentials", "Incorrect password", 400);
+  if (!isHashMatch) throw new Error("Incorrect password");
 
   let results = await profile.deleteProfile(id);
-  if (results.affectedRows !== 1)
-    throw new AppError("OperationFailed", "no user to deleted", 400);
+  if (results.affectedRows !== 1) throw new Error("no user to deleted");
 
   return res.status(200).json({
     success: true,
@@ -92,7 +87,7 @@ export const updateProfile: RequestHandler = async (
     biography,
     location,
   });
-  if (error) throw error;
+  if (error) throw new Error(error.details[0].message);
 
   const newProfile: any = {
     full_name: value.full_name || null,
@@ -109,8 +104,7 @@ export const updateProfile: RequestHandler = async (
 
   // update user profile
   let results = await profile.updateProfile({ id, ...newProfile });
-  if (results.affectedRows === 0)
-    throw new AppError("OperationFailed", "Failed to update profile", 400);
+  if (results.affectedRows === 0) throw new Error("Failed to update profile");
 
   return res.status(200).json({
     success: true,
@@ -126,21 +120,19 @@ export const changeUsername: RequestHandler = async (
 
   // validate user input
   const { error, value } = usernameValidator.validate({ username });
-  if (error) throw error;
+  if (error) throw new Error(error.details[0].message);
 
   // get old username
   let credentials = await profile.getCredentials(id);
-  if (!credentials)
-    throw new AppError("UserNotFound", "User does not exist", 404);
+  if (!credentials) throw new Error("User does not exist");
 
   // compare username
   if (value.username === credentials.username)
-    throw new AppError("WrongCredentials", "Username must be different.", 400);
+    throw new Error("Username must be different.");
 
   // check if username is available
   let usernames = await profile.getUsernames();
-  if (usernames.length === 0)
-    throw new AppError("OperationFailed", "no user to retrieved", 400);
+  if (usernames.length === 0) throw new Error("no user to retrieved");
 
   let users = usernames.map((result: any) => result.username);
   if (users.includes(value.username))
@@ -149,7 +141,7 @@ export const changeUsername: RequestHandler = async (
   // update username
   let results = await profile.updateUsername(id, value.username);
   if (results.affectedRows !== 1)
-    throw new AppError("OperationFailed", "failed to change the username", 400);
+    throw new Error("failed to change the username");
 
   return res
     .status(200)
@@ -165,7 +157,7 @@ export const changePassword = async (req: Request, res: Response) => {
     newPassword,
     confirmedNewPassword,
   });
-  if (error) throw error;
+  if (error) throw new Error(error.details[0].message);
 
   if (!value.oldPassword === value.newPassword)
     throw new Error("New password must be different");
@@ -179,8 +171,7 @@ export const changePassword = async (req: Request, res: Response) => {
 
   // validate password old password
   let isHashMatch = await bcrypt.compare(value.oldPassword, oldPasswordHash);
-  if (!isHashMatch)
-    throw new AppError("WrongCredentials", "Incorrect old password", 400);
+  if (!isHashMatch) throw new Error("Incorrect old password");
 
   // check if old new password is not the same as old password
   isHashMatch = await bcrypt.compare(value.newPassword, oldPasswordHash);
@@ -192,8 +183,7 @@ export const changePassword = async (req: Request, res: Response) => {
 
   // update password
   let results = await profile.updatePassword(id, password_hash);
-  if (results.affectedRows === 0)
-    throw new AppError("OperationFailed", "Failed to update password", 400);
+  if (results.affectedRows === 0) throw new Error("Failed to update password");
 
   return res
     .status(200)

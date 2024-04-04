@@ -1,8 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Request, RequestHandler, Response } from "express";
-
-import AppError from "../middlewares/errors.middleware.js";
 import {
   registerValidator,
   loginValidator,
@@ -22,7 +20,11 @@ const signUp: RequestHandler = async (req: Request, res: Response) => {
     password,
     confirmed_password,
   });
-  if (error) throw error;
+  if (error) {
+    let message = error.details[0].message;
+    message = message.includes("[ref:") ? "Password does not match" : message;
+    throw new Error(message);
+  }
 
   // check if email already existed
   let isEmail = await userAuth.isEmailExist(value.email);
@@ -42,8 +44,7 @@ const signUp: RequestHandler = async (req: Request, res: Response) => {
     value.username,
     password_hash
   );
-  if (results.affectedRows !== 1)
-    throw new AppError("OperationFailed", "Failed to register a user", 400);
+  if (results.affectedRows !== 1) throw new Error("Failed to register a user");
 
   res.status(201).json({
     success: true,
@@ -60,12 +61,11 @@ const signIn: RequestHandler = async (req: Request, res: Response) => {
     username,
     password,
   });
-  if (error) throw error;
+  if (error) throw new Error(error.details[0].message);
 
   // check if username already existed Jos2018(Mat
   let isUsername = await userAuth.isUsernameExist(value.username);
-  if (!isUsername)
-    throw new AppError("WrongCredentials", "Incorrect username", 400);
+  if (!isUsername) throw new Error("Incorrect username");
 
   // get user login credential if exists by username
   let { id, password_hash, current_role } = await userAuth.getUserBy(
@@ -74,14 +74,12 @@ const signIn: RequestHandler = async (req: Request, res: Response) => {
 
   // compare the password with the one stored in database
   let isHashMatch = await bcrypt.compare(value.password, password_hash);
-  if (!isHashMatch)
-    throw new AppError("WrongCredentials", "Incorrect password", 400);
+  if (!isHashMatch) throw new Error("Incorrect password");
 
-  if (current_role !== "admin")
-    throw new AppError("PermissionError", "You are not authorized", 400);
+  if (current_role !== "admin") throw new Error("You are not authorized");
 
   if (!process.env.JWT_SECRET_KEY)
-    throw new AppError("ExpectedError", "JWT_SECRET_KEY is not defined", 400);
+    throw new Error("JWT_SECRET_KEY is not defined");
 
   // generate web token
   const token = jwt.sign({ id }, process.env.JWT_SECRET_KEY, {
@@ -90,11 +88,10 @@ const signIn: RequestHandler = async (req: Request, res: Response) => {
 
   // update last login
   let results = await userAuth.updateLastLogin(id);
-  if (results.affectedRows !== 1)
-    throw new AppError("OperationFailed", "Failed to register a user", 400);
+  if (results.affectedRows !== 1) throw new Error("Failed to register a user");
 
   if (!process.env.COOKIE_EXPIRES)
-    throw new AppError("ExpectedError", "COOKIE_EXPIRES is not defined", 400);
+    throw new Error("COOKIE_EXPIRES is not defined");
 
   // login in the user
   res.status(200).json({

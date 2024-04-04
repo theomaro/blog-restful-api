@@ -1,5 +1,4 @@
 import { Request, RequestHandler, Response } from "express";
-import AppError from "../middlewares/errors.middleware.js";
 import User from "../models/users.model.js";
 
 const user = User.getInstance();
@@ -13,8 +12,7 @@ export const getUsers: RequestHandler = async (req: Request, res: Response) => {
     Number(limit),
     Number(offset) - 1
   );
-  if (users.length === 0)
-    throw new AppError("UserNotFound", `${users.length} users found`, 404);
+  if (users.length === 0) throw new Error(`${users.length} users found`);
 
   return res.status(200).json({
     success: true,
@@ -27,8 +25,7 @@ export const getUsers: RequestHandler = async (req: Request, res: Response) => {
 export const getUser: RequestHandler = async (req: Request, res: Response) => {
   const userData = await user.getUser(req.params.username);
 
-  if (!userData)
-    throw new AppError("UserNotFound", `no user have been found`, 404);
+  if (!userData) throw new Error(`no user have been found`);
 
   return res.status(200).json({
     success: true,

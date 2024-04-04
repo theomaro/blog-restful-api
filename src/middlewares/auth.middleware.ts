@@ -1,7 +1,6 @@
 import jwt, { JwtPayload } from "jsonwebtoken";
-import Profile from "../models/profile.model.js";
 import { Request, Response, NextFunction, RequestHandler } from "express";
-import AppError from "./errors.middleware.js";
+import Profile from "../models/profile.model.js";
 
 const userAuthN: RequestHandler = (
   req: Request,
@@ -11,7 +10,8 @@ const userAuthN: RequestHandler = (
   const token = req.body.token;
   if (!token) throw new Error("token must be provided");
 
-  if (!process.env.JWT_SECRET_KEY) throw new Error("JWT_SECRET_KEY must be define");
+  if (!process.env.JWT_SECRET_KEY)
+    throw new Error("JWT_SECRET_KEY must be define");
   const decoded: string | JwtPayload = jwt.verify(
     token,
     process.env.JWT_SECRET_KEY
@@ -35,11 +35,10 @@ const userAuthZ =
     const profile = Profile.getInstance();
 
     const userProfile = await profile.getProfile(req.body.id);
-    if (!userProfile)
-      throw new AppError("UserNotFound", "User does not exist", 404);
+    if (!userProfile) throw new Error("User does not exist");
 
     if (userProfile.current_role !== role)
-      throw new AppError("PermissionError", "user not authorized", 401);
+      throw new Error("user not authorized");
 
     next();
   };

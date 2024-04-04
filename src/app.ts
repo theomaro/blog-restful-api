@@ -7,13 +7,7 @@ import cors from "cors";
 import authRouter from "./routers/auth.router.js";
 import profileRouter from "./routers/profile.router.js";
 import usersRouter from "./routers/users.router.js";
-
 import { userAuthN, userAuthZ } from "./middlewares/auth.middleware.js";
-import {
-  errorHandler,
-  tokenErrorHandler,
-  validationErrorHandler,
-} from "./middlewares/errors.middleware.js";
 import tryCatch from "./helpers/tryCatch.helper.js";
 
 const port: string | number = process.env.SERVER_PORT
@@ -54,9 +48,6 @@ app.use(
 );
 
 // configure error handlers
-app.use(validationErrorHandler);
-app.use(tokenErrorHandler);
-app.use(errorHandler);
 
 // Initialize server
 app.listen(port, hostname, () => {
