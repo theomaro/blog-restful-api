@@ -6,11 +6,11 @@ let user: User | null;
 class User {
   static getInstance = () => (user ? user : new User());
 
-  getUsers = async (id: string, limit: number = 10, offset: number = 0) => {
+  getUsers = async (id: string) => {
     const sql =
-      "SELECT username, current_role, full_name, sex, birth_date, phone, email, biography, location, avatar_url, current_status, modified_at, last_login_at FROM user WHERE id != ? LIMIT ? OFFSET ?;";
+      "SELECT username, current_role, full_name, sex, birth_date, phone, email, biography, location, avatar_url, current_status, modified_at, last_login_at FROM user WHERE id != ?;";
     return await db
-      .query<RowDataPacket[]>(sql, [id, limit, offset])
+      .query<RowDataPacket[]>(sql, [id])
       .then(([rows, _]) => rows);
   };
 

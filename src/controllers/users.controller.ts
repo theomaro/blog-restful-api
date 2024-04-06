@@ -4,14 +4,7 @@ import User from "../models/users.model.js";
 const user = User.getInstance();
 
 export const getUsers: RequestHandler = async (req: Request, res: Response) => {
-  const limit = req.query.limit ?? "10";
-  const offset = req.query.page ?? "1";
-
-  let users = await user.getUsers(
-    req.body.id,
-    Number(limit),
-    Number(offset) - 1
-  );
+  let users = await user.getUsers(req.body.id);
   if (users.length === 0) throw new Error(`${users.length} users found`);
 
   return res.status(200).json({
