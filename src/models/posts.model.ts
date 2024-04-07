@@ -23,7 +23,7 @@ class Post {
 
   getPosts = async () => {
     const sql =
-      "SELECT p.title, p.summary, p.slug_url, p.current_status, p.modified_at, u.full_name, u.username, u.avatar_url FROM post AS p JOIN user AS u ON p.user_id=u.id;";
+      "SELECT p.title, p.summary, p.slug_url, p.current_status, p.modified_at, u.full_name, u.username, u.avatar_url FROM post AS p JOIN user AS u ON p.user_id=u.id ORDER BY title, modified_at DESC;";
     return await db.query<RowDataPacket[]>(sql).then(([rows, _]) => rows);
   };
 
