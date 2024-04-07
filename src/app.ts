@@ -9,6 +9,7 @@ import profileRouter from "./routers/profile.router.js";
 import usersRouter from "./routers/users.router.js";
 import { userAuthN, userAuthZ } from "./middlewares/auth.middleware.js";
 import tryCatch from "./helpers/tryCatch.helper.js";
+import postsRouter from "./routers/posts.router.js";
 
 const port: string | number = process.env.SERVER_PORT
   ? parseInt(process.env.SERVER_PORT)
@@ -45,6 +46,11 @@ app.use(
   "/api/profile",
   [tryCatch(userAuthN), tryCatch(userAuthZ("admin"))],
   profileRouter
+);
+app.use(
+  "/api/posts",
+  [tryCatch(userAuthN), tryCatch(userAuthZ("admin"))],
+  postsRouter
 );
 
 // configure error handlers

@@ -66,6 +66,7 @@ class Profile {
         .then(([rows, _]) => rows);
     }
   };
+  
   public updateUsername = async (id: string, username: string) => {
     const sql =
       "UPDATE user SET username=?, modified_at=CURRENT_TIMESTAMP () WHERE id=?;";
