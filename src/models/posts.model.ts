@@ -26,6 +26,14 @@ class Post {
       "SELECT p.title, p.summary, p.slug_url, p.current_status, p.modified_at, u.full_name, u.username, u.avatar_url FROM post AS p JOIN user AS u ON p.user_id=u.id;";
     return await db.query<RowDataPacket[]>(sql).then(([rows, _]) => rows);
   };
+
+  getPost = async (slug_url: string) => {
+    const sql =
+      "SELECT p.title, p.meta_title, p.summary, p.body, p.banner_url, p.slug_url, p.current_status, p.modified_at, u.full_name, u.username, u.avatar_url FROM post AS p JOIN user AS u ON p.user_id=u.id WHERE slug_url=?;";
+    return await db
+      .query<RowDataPacket[]>(sql, [slug_url])
+      .then(([rows, _]) => rows[0]);
+  };
 }
 
 export default Post;

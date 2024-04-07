@@ -26,3 +26,27 @@ export const getPosts = async (req: Request, res: Response) => {
     posts: posts,
   });
 };
+
+export const getPost = async (req: Request, res: Response) => {
+    const { slug_url } = req.params;
+    const result = await post.getPost(slug_url);
+    res.json({
+      success: true,
+      message: "post retrieved successfully",
+      post: {
+        title: result.title,
+        meta_title: result.meta_title,
+        summary: result.summary,
+        body: result.body,
+        status: result.current_status,
+        banner_url: result.banner_url,
+        slug_url: result.slug_url,
+        author: {
+          username: result.username,
+          full_name: result.full_name,
+          avatar_url: result.avatar_url,
+        },
+        modified_at: result.modified_at,
+      },
+    });
+  };
