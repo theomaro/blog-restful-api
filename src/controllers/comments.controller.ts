@@ -54,7 +54,7 @@ export const getComment = async (req: Request, res: Response) => {
         title: result.title,
         summary: result.summary,
         slug_url: result.slug_url,
-        status: result.slug_url,
+        status: result.current_status,
       },
       created_at: result.created_at,
       modified_at: result.modified_at,
