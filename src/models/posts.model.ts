@@ -20,7 +20,7 @@ class Post {
   };
   modified_at: string = "";
 
-  static getInstance = () => (post = post ? post : new Post());
+  static getInstance = () => (post ? post : new Post());
 
   getPosts = async () => {
     const sql =
