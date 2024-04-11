@@ -17,6 +17,7 @@ export const getPosts = async (req: Request, res: Response) => {
         full_name: result.full_name,
         avatar_url: result.avatar_url,
       },
+      created_at: result.created_at,
       modified_at: result.modified_at,
     };
   });
@@ -28,25 +29,49 @@ export const getPosts = async (req: Request, res: Response) => {
 };
 
 export const getPost = async (req: Request, res: Response) => {
-    const { slug_url } = req.params;
-    const result = await post.getPost(slug_url);
-    res.json({
-      success: true,
-      message: "post retrieved successfully",
-      post: {
-        title: result.title,
-        meta_title: result.meta_title,
-        summary: result.summary,
-        body: result.body,
-        status: result.current_status,
-        banner_url: result.banner_url,
-        slug_url: result.slug_url,
-        author: {
-          username: result.username,
-          full_name: result.full_name,
-          avatar_url: result.avatar_url,
-        },
-        modified_at: result.modified_at,
+  const { slug_url } = req.params;
+  const result = await post.getPost(slug_url);
+  res.json({
+    success: true,
+    message: "post retrieved successfully",
+    post: {
+      title: result.title,
+      meta_title: result.meta_title,
+      summary: result.summary,
+      body: result.body,
+      status: result.current_status,
+      banner_url: result.banner_url,
+      slug_url: result.slug_url,
+      author: {
+        username: result.username,
+        full_name: result.full_name,
+        avatar_url: result.avatar_url,
       },
+      created_at: result.created_at,
+      modified_at: result.modified_at,
+    },
+  });
+};
+
+export const changePostStatus = async (req: Request, res: Response) => {
+  const { slug_url } = req.params;
+  const status = req.query.status ? String(req.query.status) : "";
+
+  // validate input data
+
+  // check current status not same as incoming
+  // only approved post will be published
+  // only published post will be archived
+
+  const result = await post.updateStatus(status, slug_url);
+  if (result.affectedRows === 0)
+    return res.json({
+      success: true,
+      message: `failed to ${status} a post`,
     });
-  };
+
+  res.json({
+    success: true,
+    message: `post ${status} successfully`,
+  });
+};
