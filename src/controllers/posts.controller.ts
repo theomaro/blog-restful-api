@@ -53,7 +53,7 @@ export const getPost = async (req: Request, res: Response) => {
   });
 };
 
-export const changePostStatus = async (req: Request, res: Response) => {
+export const changeStatus = async (req: Request, res: Response) => {
   const { slug_url } = req.params;
   const status = req.query.status ? String(req.query.status) : "";
 

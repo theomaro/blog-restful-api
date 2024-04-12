@@ -38,11 +38,11 @@ class Post {
 
   updateStatus = async (status: string, slug_url: string) => {
     let sql =
-      "UPDATE post SET current_status = ?, modified_at=CURRENT_TIMESTAMP () WHERE slug_url =?";
+      "UPDATE post SET current_status = ?, modified_at = CURRENT_TIMESTAMP () WHERE slug_url =?";
 
     if (status === "published") {
       sql =
-        "UPDATE post SET current_status = ?, published_at=CURRENT_TIMESTAMP (), modified_at=CURRENT_TIMESTAMP () WHERE slug_url =?";
+        "UPDATE post SET current_status = ?, published_at = CURRENT_TIMESTAMP (), modified_at = CURRENT_TIMESTAMP () WHERE slug_url =?";
     }
 
     return await db
