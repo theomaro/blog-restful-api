@@ -39,7 +39,7 @@ export const getComment = async (req: Request, res: Response) => {
   const mainComment = {
     id: result.id,
     content: result.body,
-    status: result.status,
+    status: result.current_status,
     author: {
       username: result.username,
       full_name: result.full_name,
@@ -49,8 +49,7 @@ export const getComment = async (req: Request, res: Response) => {
     post: {
       title: result.title,
       summary: result.summary,
-      slug_url: result.slug_url,
-      status: result.current_status,
+      slug_url: result.slug_url
     },
     created_at: result.created_at,
     modified_at: result.modified_at,
