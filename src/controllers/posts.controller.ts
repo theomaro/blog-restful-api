@@ -75,3 +75,29 @@ export const changeStatus = async (req: Request, res: Response) => {
     message: `post ${status} successfully`,
   });
 };
+
+export const getPostComments = async (req: Request, res: Response) => {
+  const { slug_url } = req.params;
+  const comments = await post.getCommentsByPost(slug_url).then((results) =>
+    results.map((result) => {
+      return {
+        id: result.id,
+        content: result.body,
+        status: result.current_status,
+        author: {
+          username: result.username,
+          full_name: result.full_name,
+        },
+        created_at: result.created_at,
+        modified_at: result.modified_at,
+        parent_id: result.parent_id,
+      };
+    })
+  );
+
+  return res.json({
+    success: true,
+    message: "post retrieved successfully",
+    comments: comments,
+  });
+};

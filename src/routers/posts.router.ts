@@ -2,6 +2,7 @@ import express from "express";
 import {
   changeStatus,
   getPost,
+  getPostComments,
   getPosts,
 } from "../controllers/posts.controller.js";
 import tryCatch from "../helpers/tryCatch.helper.js";
@@ -9,6 +10,7 @@ import tryCatch from "../helpers/tryCatch.helper.js";
 const postsRouter = express.Router();
 
 postsRouter.route("/:slug_url/change-status").post(tryCatch(changeStatus));
+postsRouter.route("/:slug_url/comments").post(tryCatch(getPostComments));
 postsRouter.route("/:slug_url").post(tryCatch(getPost));
 postsRouter.route("/").post(tryCatch(getPosts));
 
