@@ -19,6 +19,14 @@ class User {
       .query<RowDataPacket[]>(sql, [username])
       .then(([rows, _]) => rows[0]);
   };
+
+  getUserPosts = async (username: string) => {
+    const sql =
+      "SELECT u.username, u.full_name, u.avatar_url, p.title, p.summary, p.slug_url, p.current_status as status, p.created_at, p.modified_at FROM user AS u JOIN post AS p ON u.id = p.user_id WHERE u.username = ?";
+    return await db
+      .query<RowDataPacket[]>(sql, [username])
+      .then(([rows, _]) => rows);
+  };
 }
 
 export default User;
