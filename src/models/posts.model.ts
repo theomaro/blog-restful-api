@@ -52,7 +52,7 @@ class Post {
 
   getCommentsByPost = async (slug_url: string) => {
     const sql =
-      "select c.id, c.body, c.created_at, c.modified_at, c.current_status, u.username, u.full_name, c.parent_id from post as p join comment as c on p.id = c.post_id join user as u on u.id = c.user_id where slug_url=?;";
+      "select p.title, p.slug_url, c.id, c.body, c.created_at, c.modified_at, c.current_status, u.username, u.full_name, u.avatar_url, c.parent_id from post as p join comment as c on p.id = c.post_id join user as u on u.id = c.user_id where p.slug_url=?;";
     return await db
       .query<RowDataPacket[]>(sql, [slug_url])
       .then(([rows, _]) => rows);

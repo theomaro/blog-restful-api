@@ -87,10 +87,16 @@ export const getPostComments = async (req: Request, res: Response) => {
         author: {
           username: result.username,
           full_name: result.full_name,
+          avatar_url: result.avatar_url,
+        },
+        post: {
+          title: result.title,
+          slug_url: result.slug_url,
         },
         created_at: result.created_at,
         modified_at: result.modified_at,
         parent_id: result.parent_id,
+        totalReplies: 0,
       };
     })
   );
