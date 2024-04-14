@@ -56,3 +56,38 @@ export const getUserPosts: RequestHandler = async (
     posts: userPosts,
   });
 };
+
+export const getUserComments: RequestHandler = async (
+  req: Request,
+  res: Response
+) => {
+  const username = req.params.username;
+
+  const userComments = await user.getUserComments(username).then((results) =>
+    results.map((result) => {
+      return {
+        id: result.id,
+        content: result.body,
+        status: result.current_status,
+        author: {
+          username: result.username,
+          full_name: result.full_name,
+          avatar_url: result.avatar_url,
+        },
+        post: {
+          title: result.title,
+          slug_url: result.slug_url,
+        },
+        created_at: result.created_at,
+        modified_at: result.modified_at,
+        totalReplies: 0,
+      };
+    })
+  );
+
+  return res.status(200).json({
+    success: true,
+    message: `${userComments.length} posts have been found for ${username}`,
+    comments: userComments,
+  });
+};

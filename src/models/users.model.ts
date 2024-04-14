@@ -27,6 +27,14 @@ class User {
       .query<RowDataPacket[]>(sql, [username])
       .then(([rows, _]) => rows);
   };
+
+  getUserComments = async (username: string) => {
+    const sql =
+      "SELECT c.id, c.body, c.created_at, c.modified_at, c.current_status, u.username, u.avatar_url, u.full_name, p.title, p.slug_url FROM comment AS c JOIN user AS u ON u.id = c.user_id JOIN post AS p ON p.id = c.post_id WHERE u.username = ?";
+    return await db
+      .query<RowDataPacket[]>(sql, [username])
+      .then(([rows, _]) => rows);
+  };
 }
 
 export default User;

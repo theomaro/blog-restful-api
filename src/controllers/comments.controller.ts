@@ -4,9 +4,7 @@ import PostComment from "../models/comments.model.js";
 const comment = PostComment.getInstance();
 
 export const getComments = async (req: Request, res: Response) => {
-  const results = await comment.getComments();
-
-  const comments = results.map((result) => {
+  const comments = (await comment.getComments()).map((result) => {
     return {
       id: result.id,
       content: result.body,
